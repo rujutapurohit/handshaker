@@ -1,0 +1,11 @@
+DOCUMENTATION:
+  PURPOSE: Roman filter transmissions, nominal and shifted to account for chromatic effects
+  AUTHOR: R. PUROHIT
+  DATE: July 16, 2026
+  SOURCE:  https://github.com/GalSim-developers/GalSim/blob/releases/2.5/share/roman/Roman_effarea_20210614.txt
+  SOURCE:  https://github.com/Roman-Supernova-PIT/chromatic-effects
+  NOTES:
+  - ROMAN_[filter].dat files are create by command (Perlmutter@NERSC)
+  - $TD_SOFTWARE/desc_misc_scripts/util/snana_reformat_filters_roman.py
+  - shifted files naming: ROMAN_[filter]_shifted[SCA].dat files, where SCA = (1, 18)
+DOCUMENTATION_END:
