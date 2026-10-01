@@ -31,8 +31,8 @@ The config file is copied into the output dir (`config.used.yaml`) on every run.
 
 ## Ice model
 
-Ice on the cold optics multiplies throughput by a thickness-dependent factor
-`T(t)/T(t=0)`. The **released** model (`ice: {flag: released}`) reads the
+Ice changed throughput by a thickness-dependent multiplicative factor
+`T(t)/T(t=0)`. The **released** model (`ice: {flag: thushara}`) reads the
 `spectral_responses_SCA*.ecsv` response (columns `T_ratio_d<thickness>nm`) and
 linearly interpolates it, per wavelength, to the requested thickness. Ice thickness
 per observation comes from the `ice_thickness_nm` column. The toy
@@ -40,6 +40,8 @@ deposition-vs-(position, MJD) model (`ice_rep_sim.py`, needs the growth-rate
 mosaic `.npz`) can supply a thickness instead via
 `ReleasedIceModel.thickness_from_position`, but is not required for the default
 per-observation-thickness workflow. `ice: {flag: none}` disables ice.
+
+Thushara's model: https://github.com/RomanSpaceTelescope/ice-toy-model 
 
 ## Layout
 
@@ -87,5 +89,8 @@ Still stubbed / TODO: the SOC filter format, the focal-plane `(RA,DEC)->SCA`
 projection (so `fpa` only trusts the supplied SCA), the ice deposition mosaic
 `.npz` wiring, and the polyfit *magnitude-level* validation
 (`mag_err = mag_poly − mag_true`) called out in the spec.
+
+- Need to find better ways to write modelspec.root files (alternative to root)
+- Better logging and debugging utils
 
 See `Handshaker_Magcor.pdf` for the full spec.
