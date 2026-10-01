@@ -10,9 +10,9 @@ whole pipeline before touching Midway data.
 
 ```bash
 pip install -e .
-handshaker configs/example.yaml                      # magcor mode -> out/example/magcor.csv
+handshaker configs/example.yaml 
 handshaker configs/example.yaml --mode polyfit -o out/example_polyfit
-pytest                                                # 5 no-data smoke tests
+pytest
 ```
 
 ## Two modes
