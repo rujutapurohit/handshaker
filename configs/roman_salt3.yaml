@@ -1,0 +1,33 @@
+# Production config: SALT3 SN SED + real Roman transmissions.
+#
+# Requires:
+#   * $SNDATA_ROOT set, with models/SALT3/SALT3.P22-NIR present, and
+#   * the ROMAN_FILTERS directory laid out as ROMAN_<band>/ROMAN_<band>[_shifted_<sca>].dat
+#
+# This mirrors the prototype notebook's paths; edit `root` for your machine.
+
+mode: magcor
+output_dir: out/roman_salt3
+
+filters:
+  source: rujuta            # ROMAN_FILTERS directory layout
+  root: /project2/rkessler/SURVEYS/ROMAN/USERS/rpurohit/handshaker/ROMAN_FILTERS
+
+sn_sed:
+  model: salt3              # reads $SNDATA_ROOT/models/SALT3/SALT3.P22-NIR
+  # model_dir: /path/to/SALT3.P22-NIR   # optional explicit override
+
+calib_star:
+  model: synthetic
+  temperature_k: 9500
+
+ice:
+  flag: released            # released ice transmission response (bundled SCA10)
+  # response_path: /path/to/spectral_responses_SCA<n>.ecsv   # optional override
+
+effects: [shift, ice, total]
+
+# # Point at a CSV exported from your sim/FITRES (columns: cid, band, mjd, sca,
+# # ra, dec, z, epoch|t0, x1, c, ice_thickness_nm). See configs/observations.csv.
+# observations:
+#   path: configs/observations.csv

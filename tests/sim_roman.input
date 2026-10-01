@@ -1,0 +1,65 @@
+DOCUMENTATION:
+DOCUMENTATION_END:
+
+#### ROMAN HLTD REFERENCE SURVEY ####
+SIMLIB_FILE: $SNANA_ROMAN_USERS/rpurohit/HLTDS_ROTAC_SCU_FULL_edited_v3.SIMLIB
+SOLID_ANGLE: 0.0  # set in simlib
+GENRANGE_PEAKMJD:  61950 62740
+USE_SIMLIB_IMGNUM: 1
+
+#KCOR_FILE: $SNANA_ROMAN_USERS/rpurohit/inputs/roman_nominal.fits 
+#GENFILTERS:  abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01
+
+KCOR_FILE: /project2/rkessler/PRODUCTS/SNDATA_ROOT/kcor/ROMAN/20210614/calib_ROMAN.fits.gz 
+GENFILTERS: RZYJHF
+
+#EXPOSURE_TIME: 100000
+
+####### Simulation Generation ##########
+RANSEED: 12945
+GENSIGMA_SEARCH_PEAKMJD:  1.0     # sigma-smearing for SEARCH_PEAKMJD (days)
+GENRANGE_TREST:   -20.0     60.0     # rest epoch relative to peak (days), PLASTICC likes -100--500
+# SLSN had -100--500
+GENRANGE_REDSHIFT:  0.1  2.998
+GENSIGMA_REDSHIFT:  0.001
+# smear flags: 0=off, 1=on
+SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
+SMEARFLAG_ZEROPT:  1  # smear zero-point with zptsig
+
+
+#### Selection ####
+SEARCHEFF_PIPELINE_LOGIC_FILE: $SNANA_ROMAN_USERS/rpurohit/inputs/SEARCHEFF_PIPELINE_LOGIC.DAT
+SEARCHEFF_PIPELINE_EFF_FILE:  $SNANA_ROMAN_USERS/rpurohit/inputs/SEARCHEFF_PIPELINE_ROMAN.DAT
+SEARCHEFF_zHOST_FILE: $SNANA_ROMAN_USERS/pippin_strategies/Inputs/SEARCHEFF_zHOST_CCSrec.DAT
+#SEARCHEFF_SPEC_FILE:  SEARCHEFF_SPEC_ZERO.DAT
+#SEARCHEFF_SPEC_SCALE: ZERO
+NEWMJD_DIF: 0.4
+
+
+#### Host Galaxies ####
+
+#HOSTLIB_FILE: /project2/rkessler/SURVEYS/ROMAN/USERS/rpurohit/inputs/ROMAN+LSST_DIFFSKY_LARGE.HOSTLIB.gz
+HOSTLIB_FILE: /project2/rkessler/PRODUCTS/SNDATA_ROOT/simlib/WFIRST/ROMAN_HLTDSREC_K25.HOSTLIB.gz
+APPLY_SEARCHEFF_OPT: 1   # some how this is removing a lot of objects, more then it should.
+APPLY_CUTWIN_OPT: 0
+
+
+######## MW and Cosmology ##################
+OPT_MWEBV: 3   # SFD98
+OPT_MWCOLORLAW: 99
+OMEGA_MATTER:  0.3
+OMEGA_LAMBDA:  0.7
+W0_LAMBDA:    -1.00
+H0:           70.0   
+
+
+#### Simulation Output Options #####
+FORMAT_MASK: 48   # FITS output + RANDOM CID
+
+
+SIMGEN_DUMP: 17
+   CID GENTYPE FIELD ZCMB MWEBV MU
+   PEAKMJD LIBID RA DEC NOBS
+   SNRMAX SNRMAX2 SNRMAX3 CUTMASK SIM_SEARCHEFF_MASK SIM_TEMPLATE_INDEX
+  
+NGENTOT_LC: 10000

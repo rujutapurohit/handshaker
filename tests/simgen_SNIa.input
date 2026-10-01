@@ -1,0 +1,33 @@
+INPUT_FILE_INCLUDE: /project2/rkessler/SURVEYS/ROMAN/USERS/rpurohit/handshaker/tests/sim_roman.input
+
+
+# Copied from K25 to match params
+
+
+GENVERSION: CODETEST_HANDSHAKER
+GENTYPE: 10
+GENSOURCE:   RANDOM
+GENMODEL:  $PLASTICC_ROOT/model_libs_updates/SALT3.NIR_WAVEEXT
+GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
+GENMODEL_MSKOPT: 16  # negative SED flux --> zero
+
+# Rate is from Rob Knop's eye-ball fit to David Rubin's SNIa rate that
+# is based on Rodney 2014. The 4 parameters per DNDZ key are a,b,z0,z1 where
+#   Volumetric rate = a*(1+z)^b for z0 < z < z1
+
+DNDZ: POWERLAW2 2.5E-5  1.5 0.0 1.0    # from Didlay 2008
+DNDZ: POWERLAW2 9.7E-5 -0.5 1.0 5.0    # high-z extension from Lou
+
+# population params from Popovic 2023 and DES-SN5YR
+GENPDF_FILE: $SNDATA_ROOT/models/population_pdf/DES-SN5YR_P23/DES-SN5YR_DES_S3_P23.DAT.gz  
+GENPDF_OPTMASK: 1    # 0-> abort if host param is outside map range
+                     # 1-> exptrapolate if host param is outside map range
+
+# ----------------------
+
+CIDOFF: 10000
+
+CUTWIN_TRESTMIN: -19 -5         #at least 1 epoch before -5 d (rest-frame)
+CUTWIN_TRESTMAX: +30 +80        #at least 1 epoch past +30 
+CUTWIN_TGAPMAX:  0   20         #largest Trest gap (days)
+CUTWIN_T0GAPMAX: 0   10         #largest Trest gap near peak (days)

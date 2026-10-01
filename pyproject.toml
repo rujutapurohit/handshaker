@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "handshaker"
+version = "0.1.0"
+description = "Photometric corrections (magcor) for Roman WFI calibration effects, and validation of polynomial ice-throughput approximations."
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.9",
+    "pandas>=1.5",
+    "astropy>=5.0",
+    "pyyaml>=5.4",
+    "matplotlib>=3.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+modelspec = ["uproot>=5.0", "awkward>=2.0"]   # read SNANA MODELSPEC .root (SPECTRA tree)
+
+[project.scripts]
+handshaker = "handshaker.cli:main"
+handshaker-plot = "handshaker.plots:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+handshaker = ["data/*.ecsv"]

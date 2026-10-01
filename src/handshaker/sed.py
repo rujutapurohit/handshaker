@@ -7,9 +7,9 @@ difference between SN and average calibration star"):
 * the **calibration star** SED - a static reference spectrum.
 
 Everything is expressed through a small :class:`SEDModel` interface so the pipeline
-never hard-codes SALT3: tests and the runnable example use :class:`BlackbodySEDModel`,
-which needs no external data, while production uses :class:`SALT3SEDModel`, which
-reads the SALT3 templates from ``$SNDATA_ROOT``.
+never hard-codes SALT3: tests and the runnable example use :func:`synthetic_sed`
+(a data-free blackbody :class:`FixedSED`), while production uses
+:class:`SALT3SEDModel`, which reads the SALT3 templates from ``$SNDATA_ROOT``.
 """
 
 from __future__ import annotations
@@ -46,8 +46,6 @@ class SEDModel:
         return wave * (1.0 + z), flux / (1.0 + z)
 
 
-
-
 class FixedSED(SEDModel):
     """A fixed spectrum (e.g. a calibration star) that ignores epoch/x1/c."""
 
@@ -58,6 +56,26 @@ class FixedSED(SEDModel):
 
     def rest_frame(self, epoch=0.0, x1=0.0, c=0.0):
         return self.wave, self.flux
+
+
+def _planck(wave_angstrom, temperature_k):
+    """Planck spectral radiance in per-Angstrom units (arbitrary normalization)."""
+    wave_cm = np.asarray(wave_angstrom, dtype=float) * 1e-8
+    h, c_light, kB = 6.62607015e-27, 2.99792458e10, 1.380649e-16  # cgs
+    x = h * c_light / (wave_cm * kB * temperature_k)
+    return 1.0 / (wave_cm ** 5) / np.expm1(x)
+
+
+def synthetic_sed(temperature_k=9000.0, wave=None, name="synthetic"):
+    """A data-free blackbody spectrum as a :class:`FixedSED`.
+
+    Used by the runnable example and the test suite so Handshaker exercises the
+    full shift/ice/synphot machinery without any external data. It is static in
+    epoch/x1/c (redshift still applies via ``observed_frame``); use
+    :class:`SALT3SEDModel` for a real, epoch/x1/c-dependent SN SED.
+    """
+    wave = np.arange(3000.0, 25000.0, 10.0) if wave is None else np.asarray(wave, float)
+    return FixedSED(wave, _planck(wave, temperature_k), name=name)
 
 
 def default_salt3_model_dir():
@@ -96,7 +114,7 @@ class SALT3SEDModel(SEDModel):
         if not self.model_dir:
             raise ValueError(
                 "No SALT3 model_dir given and $SNDATA_ROOT is not set. "
-                "Pass model_dir=... or use a BlackbodySEDModel for testing."
+                "Pass model_dir=... or use synthetic_sed() for testing."
             )
         self._cl = None  # (wave_lo, wave_hi, coeffs)
 
@@ -175,59 +193,3 @@ class SALT3SEDModel(SEDModel):
         result = least_squares(residuals, x0=[x0_guess, 0.0, 0.0])
         x0, x1, c = result.x
         return {"x0": x0, "x1": x1, "c": c, "success": result.success, "cost": result.cost}
-
-
-
-# Now get synthetic mags by integrating an SED trhough the filters
-
-
-def band_flux(wave, flux, band_wave, band_thru):
-
-    """
-    Parameters
-    ----------
-    wave, flux : array
-        SED wavelength grid [A] and flux density [erg/s/cm^2/A].
-    band_wave, band_thru : array
-        Bandpass wavelength grid [A] and throughput (0-1).
-
-    """
-    wave = np.asarray(wave, dtype=float)
-    flux = np.asarray(flux, dtype=float)
-    thru_on_sed = np.interp(wave, band_wave, band_thru, left=0.0, right=0.0)
-    return _trapz(flux * thru_on_sed * wave, wave)
-
-
-def synphot_mag(wave, flux, band_wave, band_thru):
-    """Synthetic magnitude ``-2.5 log10(band_flux)`` (arbitrary but consistent ZP).
-
-    Returns ``+inf`` if the band flux is non-positive (no overlap / all-zero SED),
-    so callers can detect and skip undefined magnitudes instead of hitting a
-    log-of-nonpositive warning.
-    """
-    bf = band_flux(wave, flux, band_wave, band_thru)
-    if bf <= 0:
-        return np.inf
-    return -2.5 * np.log10(bf)
-
-
-def effective_wavelength(band_wave, band_thru, wave=None, flux=None):
-    """Throughput- (and optionally SED-) weighted mean wavelength of a bandpass.
-
-    With no SED, returns the flat-spectrum pivot-style mean ``\\int T l dl / \\int T dl``.
-    With an SED, weights by ``f(l) T(l) l`` to give the source's effective wavelength.
-    """
-    band_wave = np.asarray(band_wave, dtype=float)
-    band_thru = np.asarray(band_thru, dtype=float)
-    if wave is None or flux is None:
-        num = _trapz(band_thru * band_wave, band_wave)
-        den = _trapz(band_thru, band_wave)
-    else:
-        wave = np.asarray(wave, dtype=float)
-        thru_on_sed = np.interp(wave, band_wave, band_thru, left=0.0, right=0.0)
-        weight = np.asarray(flux, dtype=float) * thru_on_sed * wave
-        num = _trapz(weight * wave, wave)
-        den = _trapz(weight, wave)
-    if den <= 0:
-        return np.nan
-    return num / den

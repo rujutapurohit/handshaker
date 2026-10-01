@@ -1,0 +1,73 @@
+# Automatic translation for legacy LCFIT file LEGACY_SIMFIT_WFIRST_Allz.NML
+
+CONFIG:
+  OUTDIR: SIMFIT_OUT
+  BATCH_INFO: sbatch  $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE 60
+  VERSION:
+  - CODETEST_HANDSHAKER
+
+#END_YAML
+
+  &SNLCINP
+    VERSION_PHOTOMETRY = 'CODETEST_HANDSHAKER'
+    SNTABLE_LIST  = 'SNANA FITRES MODELSPEC LCPLOT'
+    TEXTFILE_PREFIX = 'CODETEST_HANDSHAKER'
+    ROOTFILE_OUT = 'CODETEST_HANDSHAKER.root'
+    
+   ! KCOR_FILE =  '$SNANA_DEBUG/lcfit_wavecor/kcors/inputs/roman_nominal.fits'  ! rujuta edited  
+    
+    KCOR_FILE  = '/project2/rkessler/PRODUCTS/SNDATA_ROOT/kcor/ROMAN/20210614/calib_ROMAN.fits.gz'
+    INTERP_OPT     = 1
+    NFIT_ITERATION = 2
+    USESIM_REDSHIFT = T
+     
+   ! DEBUG_FLAG = 908  ! use global SNLC_FLUXCALMAX
+
+    ABORT_ON_NOEPOCHS = F
+    OPT_SETPKMJD = 0 ! 4 = no abort, 16 = clump method     
+    OPT_MWEBV      = 3       ! 3=Schafly2011 update, 2=SFD98, 1=FileDefined
+    OPT_MWCOLORLAW = 99      ! Fitzpatrick99
+    RV_MWCOLORLAW  = 3.1
+
+    cutwin_redshift  =  0.0,   3.0
+    cutwin_Trestmin  = -99.0, -5.0
+    cutwin_Trestmax  =  20.0, 9999.     
+    cutwin_Trest = -20.0, 80.0
+
+    cutwin_snrsum        =  20.0, 1.0E8
+    cutwin_snrmax        =  5.0, 9999.
+    cutwin_snrmax2       =  5.0, 9999.
+    cutwin_nfilt_snrmax2 =  3.0, 9999. 
+  
+  &END
+
+  &FITINP
+! Filters are dropped if the central wavelength of a filter is outside of RESTLAMBDA_FITRANGE
+    RESTLAMBDA_FITRANGE = 3200. , 19000.
+    FITMODEL_NAME  = '$PLASTICC_ROOT/model_libs_updates/SALT3.NIR_WAVEEXT'   
+    OPT_COVAR    = 1
+    OPT_XTMW_ERR = 1
+    FUDGEALL_ITER1_MAXFRAC = 0.02
+!     USESIM_REDSHIFT = T
+
+    PRIOR_MJDSIG        = 10
+    PRIOR_LUMIPAR_RANGE = -5.0, 5.0
+    PRIOR_LUMIPAR_SIGMA = 0.1
+
+    DELCHI2_REJECT    =  1000.0
+    PRIOR_MJDSIG      =  10.0
+    PHOTOZ_BOUND      = 0.01,  3.0   ! PHOTOZ
+    PRIOR_ZERRSCALE   = 1.0          ! PHOTOZ
+    PRIOR_MUERRSCALE  = 1000.0       ! PHOTOZ  large number -> no cosmology prior
+    OPT_CHI2_SIGMA    = 128           ! PHOTOZ  ignore log(sigma) term in chi2 (128)
+
+    FITWIN_TREST  = -15.0, 40.0
+    FITWIN_SHAPE  =  -3.0, 3.0
+    FITWIN_COLOR  =  -0.3, 0.3
+    FITWIN_PROB   =  0.01, 1.01
+    FITWIN_PROB_ITER1 = 0.01, 1.01
+
+    OPT_PHOTOZ = 2
+
+    FILTLIST_FIT = 'RZYJHF'
+  &END

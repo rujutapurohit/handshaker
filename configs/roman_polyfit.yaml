@@ -1,0 +1,28 @@
+# Real-data polyfit run: is a polynomial a good enough approximation to the
+# wavelength-dependent ICE throughput T(t)/T(t=0), within each band?
+#
+# This is about ICE, not the per-SCA filter shift. It needs the released ice
+# response (bundled SCA10 ecsv, or ice.response_path) and a filter source only to
+# define each band's wavelength support.
+#
+# Run:  handshaker configs/roman_polyfit.yaml
+
+mode: polyfit
+output_dir: out/roman_polyfit
+
+# Filter source is used ONLY to get each band's nominal curve (its wavelength
+# support). The per-SCA shifted curves are NOT used in polyfit.
+filters:
+  source: rujuta
+  root: /project2/rkessler/SURVEYS/ROMAN/USERS/rpurohit/handshaker/ROMAN_FILTERS
+
+# The true ice model the polynomial is compared against.
+ice:
+  flag: released
+  # response_path: /path/to/spectral_responses_SCA<n>.ecsv   # default: bundled SCA10
+
+polyfit:
+  order: 5
+  bands: [F062, F087, F106, F129, F158, F184]
+  thicknesses: [30, 90, 150, 240, 300]     # ice thickness grid [nm]
+  # support_frac: 0.01                       # fit where nominal throughput > this * peak

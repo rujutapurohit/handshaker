@@ -1,0 +1,14 @@
+mode: magcor
+output_dir: out/magcor
+
+filters:
+  source: roman_filters        # roman_filters | soc  (soc: not available yet)
+  root: /project2/rkessler/SURVEYS/ROMAN/USERS/rpurohit/handshaker/ROMAN_FILTERS
+
+ice:
+  source: thushara # thushara | soc
+  thickness: mjd # mjd | <fixed nm>
+
+reference_sca: 2
+
+observations: /project2/rkessler/SURVEYS/ROMAN/USERS/rpurohit/handshaker/tests/CODETEST_HANDSHAKER.root   # dataset: SED/SCA/MJD read from here

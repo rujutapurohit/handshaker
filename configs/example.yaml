@@ -1,0 +1,47 @@
+# Handshaker example config -- runs end-to-end with NO external data.
+#
+# Everything here uses the synthetic filter source and a synthetic (blackbody)
+# SN SED, so `handshaker configs/example.yaml` works on any machine. Swap the
+# `filters` and `sn_sed` sections for the production ones in roman_salt3.yaml
+# when SALT3 + real Roman transmissions are available.
+
+mode: magcor                 # "magcor" or "polyfit"
+output_dir: out/example
+
+# --- Global inputs -------------------------------------------------------- #
+
+# Source of filter transmissions (the get_filter class).
+#   source: soc | thushara 
+filters:
+  source: synthetic          # fake set for testing; real one from SOC one day
+  shift_per_sca: 6.0         # Angstrom of shift per SCA step (synthetic only)
+
+# Supernova SED.
+#   model: salt3 (needs $SNDATA_ROOT)
+sn_sed:
+  model: synthetic
+
+# Average calibration-star SED. Omit / null to correct to a flat reference
+# instead of the SN-minus-star chromatic differential.
+calib_star:
+  model: synthetic
+  temperature_k: 9500
+
+# Ice model: the released transmission response (spectral_responses_*.ecsv).
+#   flag: released -> use the bundled SCA10 response; none -> disable ice.
+#   response_path: optional path to a different released ecsv.
+# Ice thickness is supplied per observation (ice_thickness_nm, in nm).
+ice:
+  flag: released
+
+# Which effects to report (subset of: shift, ice, total).
+effects: [shift, ice, total]
+
+# --- Observation-specific inputs ------------------------------------------ #
+# Inline list here; or use `observations: {path: configs/observations.csv}`.
+# ice_thickness_nm is the ice layer thickness in nm at that observation (0 = none).
+observations:
+  - {cid: SN1, band: J129, mjd: 62200.0, sca: 3,  ra: 10.0, dec: -44.0, z: 0.5, epoch: 0.0,  x1: 0.5,  c: 0.05, ice_thickness_nm: 0.0}
+  - {cid: SN1, band: H158, mjd: 62210.0, sca: 3,  ra: 10.0, dec: -44.0, z: 0.5, epoch: 8.0,  x1: 0.5,  c: 0.05, ice_thickness_nm: 90.0}
+  - {cid: SN2, band: Y106, mjd: 62450.0, sca: 12, ra: 12.0, dec: -45.0, z: 1.0, epoch: -3.0, x1: -0.3, c: 0.10, ice_thickness_nm: 150.0}
+  - {cid: SN2, band: F184, mjd: 62480.0, sca: 12, ra: 12.0, dec: -45.0, z: 1.0, epoch: 12.0, x1: -0.3, c: 0.10, ice_thickness_nm: 240.0}
