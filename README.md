@@ -1,11 +1,6 @@
 # handshaker
 
-Photometric corrections (`magcor`) for Roman WFI calibration effects, and a mode
-to test whether polynomial approximations to the wavelength-dependent ice
-throughput are accurate enough for the science analysis.
-
-Importable as a Python module **and** runnable as a standalone script — the
-packaged version of the prototype `handshaker.ipynb`.
+Photometric corrections (`magcor`) for Roman WFI calibration effects.
 
 ## Quickstart (no external data)
 
