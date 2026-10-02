@@ -2,12 +2,6 @@
 
 Photometric corrections (`magcor`) for Roman WFI calibration effects.
 
-## Quickstart (no external data)
-
-The example config runs end-to-end on any machine — synthetic filters, a
-blackbody SN SED, and the bundled SCA10 ice response — so you can smoke-test the
-whole pipeline before touching Midway data.
-
 ```bash
 pip install -e .
 handshaker configs/example.yaml 
