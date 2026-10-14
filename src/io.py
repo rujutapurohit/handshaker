@@ -13,31 +13,43 @@ import numpy as np
 import pandas as pd
 
 
-def load_lcplot(path: str) -> pd.DataFrame:
-    """Load a SNANA LCPLOT(text:csv) table into a DataFrame (stripped column names)."""
-    df = pd.read_csv(path, skipinitialspace=True)
-    df.columns = [c.strip() for c in df.columns]
-    return df
-
-
-def load_fitres(path: str) -> pd.DataFrame:
-    """Load a SNANA FITRES text table (VARNAMES:/SN: rows) into a DataFrame.
+def _load_snana_table(path: str) -> pd.DataFrame:
+    """Parse a SNANA ``VARNAMES:`` table (FITRES ``SN:`` or LCPLOT ``OBS:`` rows).
 
     Numeric columns are converted to numbers; anything non-numeric stays a string.
     """
     names, rows = None, []
     with open(path) as f:
         for line in f:
-            if line.startswith("VARNAMES:"):
-                names = line.split()[1:]
-            elif line.startswith("SN:"):
-                rows.append(line.split()[1:])
+            s = line.split()
+            if not s:
+                continue
+            if s[0] == "VARNAMES:":
+                names = s[1:]
+            elif names is not None and s[0].endswith(":"):   # SN:, OBS:, ROW:, ...
+                rows.append(s[1:])
     df = pd.DataFrame(rows, columns=names)
     for col in df.columns:
         converted = pd.to_numeric(df[col], errors="coerce")
         if converted.notna().all():
             df[col] = converted
     return df
+
+
+def load_lcplot(path: str) -> pd.DataFrame:
+    """Load a SNANA LCPLOT table (``VARNAMES:/OBS:`` format or plain CSV)."""
+    with open(path) as f:
+        first = f.readline()
+    if first.startswith("VARNAMES:"):
+        return _load_snana_table(path)
+    df = pd.read_csv(path, skipinitialspace=True)
+    df.columns = [c.strip() for c in df.columns]
+    return df
+
+
+def load_fitres(path: str) -> pd.DataFrame:
+    """Load a SNANA FITRES text table (``VARNAMES:/SN:`` rows) into a DataFrame."""
+    return _load_snana_table(path)
 
 
 def write_snana_filters(filters, bands, outdir, ice_model=None, thickness_nm=0.0,

@@ -1,0 +1,50 @@
+# handshaker ↔ SNANA magcor cross-check
+
+Goal: get the per-band chromatic magcor straight from the SNANA sim and compare
+it to handshaker. The sim is run **twice** with identical inputs except the kcor;
+the magcor is the difference.
+
+    magcor(band) = mag_reference(band) − mag_ice(band)
+
+where both kcors use the **K-star (KF06T2)** as the mag system, so the result is
+the K-giant-referenced magcor (AB primary cancels).
+
+## Step 1 — SIMLIB  (`magcor_test.SIMLIB`) 
+
+One `LIBID`, `NOBS: 7`, exactly one observation per band (R Z Y J H F K) at a
+single epoch `MJD = 61010.000`. The same simlib feeds both sims.
+
+Field-by-field (the `S:` line columns):
+
+| col | value | meaning / why |
+|-----|-------|---------------|
+| MJD | 61010.000 | one epoch for all bands → all share one Trest (step 5) |
+| IDEXPT | 1..7 | unique exposure id per obs |
+| FLT | R Z Y J H F K | band code; must match the kcor `FILTER:` chars |
+| GAIN | 1.0 | placeholder (noiseless truth used) |
+| RDNOISE | 5.0 | placeholder |
+| SKYSIG | 10.0 | placeholder |
+| PSF1/PSF2/ratio | 1.50/0/0 | placeholder PSF (pixels) |
+| ZPTAVG | 32.00 | placeholder ZP; only needs to be identical in both runs |
+| ZPTERR | 0.005 | placeholder |
+| MAG | -99.0 | let the sim compute the mag from the SED+kcor |
+
+Only requirement that matters: **the two runs use the same SIMLIB**, so ZPT/noise
+cancel and `magcor` is purely the kcor (filter-system) difference.
+
+`FILTERS: RZYJHFK` / `MWEBV: 0.000` (no Galactic dust).
+
+
+## Step 2 — template sim-input (TODO)
+Template `.input` with `__X1__`, `__C__`, `__Z__`, `__PEAKMJD__`, `__KCOR__`
+placeholders for string replacement. Truth-mode flag: if TRUE, fix x1/c/mB to
+truth (`GENMEAN`/single-value ranges, `GENSIGMA 0`); if real data, draw from
+populations. No dust (`GENRANGE_AV` off / `GENMODEL` with no extinction).
+
+## Step 3 — two kcors (in progress elsewhere)
+1. **Reference**: nominal Roman filters + `PRIMARY_SED: KF06T2`, `MAGSYSTEM: KF06T2`.
+2. **Ice**: `FILT_ice150` filters + same K-star primary/system.
+(See `kgiant_*KF_*.input` on Midway.)
+
+## Step 4 — per-obs inputs
+Trest/tobs, redshift, and (truth-mode) x1, c, mB. No Av/Rv.

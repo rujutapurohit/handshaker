@@ -30,13 +30,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--filters-root", required=True, help="ROMAN_FILTERS directory")
     p.add_argument("--filter-source", default="roman_filters", help="filter source (roman_filters | soc)")
     p.add_argument("--reference-sca", type=int, default=2, help="fixed reference SCA (default 2)")
-    p.add_argument("--ice", default="released", choices=["released", "polyfit", "none"],
-                   help="ice model (default released)")
+    p.add_argument("--ice", default="thushara", choices=["thushara", "soc", "polyfit", "none"],
+                   help="ice model (default thushara)")
     p.add_argument("--order", type=int, default=5, help="polynomial order for --ice polyfit")
     g = p.add_mutually_exclusive_group()
     g.add_argument("--thickness", type=float, help="fixed ice thickness [nm] for every observation")
     g.add_argument("--thickness-from-mjd", action="store_true",
                    help="ice thickness from MJD (steady growth + decon cadence)")
+    p.add_argument("--calib-star", help="K-giant SED file (2 cols: wave[A], flux); magcor is relative to it")
     p.add_argument("-o", "--output", default="magcor.csv", help="output CSV (default magcor.csv)")
     p.add_argument("-v", "--verbose", action="store_true")
     return p
@@ -58,8 +59,10 @@ def main(argv=None) -> int:
     else:
         thickness = 0.0
 
+    from .sed import kgiant_sed
+    calib_star = kgiant_sed(path=args.calib_star)   # magcor relative to the K giant
     tbl = magcor_table(spec, filters, ice, reference_sca=args.reference_sca,
-                       ice_thickness_nm=thickness)
+                       ice_thickness_nm=thickness, calib_star=calib_star)
     tbl.to_csv(args.output, index=False)
     log.info("wrote %d rows to %s", len(tbl), args.output)
     print(tbl.head(min(len(tbl), 10)).to_string(index=False))

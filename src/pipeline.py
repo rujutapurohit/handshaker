@@ -25,7 +25,7 @@ from .logging_utils import get_logger
 from .magcor import EFFECTS, compute_magcor
 from .observation import Observation
 from .polyfit import polyfit_ice_band
-from .sed import SALT3SEDModel, FixedSED, synthetic_sed
+from .sed import SALT3SEDModel, FixedSED, synthetic_sed, kgiant_sed
 
 log = get_logger("pipeline")
 
@@ -48,7 +48,9 @@ def build_calib_star(spec):
     if not spec:
         return None
     spec = dict(spec)
-    model = spec.pop("model", "synthetic").lower()
+    model = spec.pop("model", "kgiant").lower()
+    if model in ("kgiant", "k"):
+        return kgiant_sed(path=spec.get("path"), temperature_k=spec.get("temperature_k", 4500.0))
     if model in ("synthetic", "blackbody", "bb"):
         return synthetic_sed(temperature_k=spec.get("temperature_k", 9500.0), name="calib_star")
     if model in ("file", "ascii"):
@@ -194,8 +196,10 @@ def run_magcor_modelspec(cfg, filters, ice_model, grid, dataset_path) -> pd.Data
     spec = load_modelspec(dataset_path)
     thk = (cfg.ice or {}).get("thickness", "mjd") if isinstance(cfg.ice, dict) else "mjd"
     thickness = (lambda r: mjd_ice_thickness(r.mjd)) if str(thk) == "mjd" else float(thk)
+    # magcor is relative to the K-giant calibration star: SN-minus-star differential.
+    calib_star = build_calib_star(cfg.calib_star or {"model": "kgiant"})
     tbl = magcor_table(spec, filters, ice_model, reference_sca=cfg.reference_sca,
-                       ice_thickness_nm=thickness, grid=grid)
+                       ice_thickness_nm=thickness, grid=grid, calib_star=calib_star)
     out = cfg.ensure_output_dir()
     path = os.path.join(out, "magcor.csv")
     tbl.to_csv(path, index=False)

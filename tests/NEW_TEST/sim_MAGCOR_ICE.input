@@ -1,0 +1,55 @@
+# ======================================================================
+# Template SNANA sim-input for the handshaker <-> SNANA magcor test (step 2).
+# String-replace the __PLACEHOLDERS__, then run twice (once per kcor, step 3):
+#   calib_kgiant_primAB_ice.fits = reference (nominal) K-star kcor   -> SIM_MAGOBS_ref
+#   calib_kgiant_primAB_ice.fits = ice            K-star kcor        -> SIM_MAGOBS_ice
+# magcor(band) = SIM_MAGOBS_ref(band) - SIM_MAGOBS_ice(band)
+#
+# TRUTH MODE (this template): x1, c, z, PEAKMJD are FIXED (GENSIGMA 0), no
+# intrinsic scatter, no dust -> the generated SED is deterministic, so the
+# magcor is a pure (SED, band, Trest) number directly comparable to handshaker.
+# For a "real data" population instead, replace the GENPEAK/GENSIGMA/GENRANGE
+# block with your population widths (the flag in step 4).
+# ======================================================================
+
+GENVERSION:   MAGCOR_ICE
+GENSOURCE:    RANDOM
+GENMODEL:     $SNDATA_ROOT/models/SALT3/SALT3.P22-NIR   # match handshaker's SALT3
+
+SIMLIB_FILE:  magcor_test.SIMLIB
+KCOR_FILE:    calib_kgiant_primAB_ice.fits
+
+# ---- one SN, one LIBID, keep the single epoch (no trigger/detection cut) ----
+NGENTOT_LC:          1
+RANSEED:             12345
+GENFILTERS:          RZYJHFK
+APPLY_SEARCHEFF_OPT: 0
+SIMLIB_MINOBS:       1
+GENRANGE_TREST:      -100.0  100.0
+
+# ---- truth-controlled SN params (step 4; GENSIGMA 0 => fixed at peak value) --
+GENRANGE_PEAKMJD:    61000  61000   # step 5: Trest=(61010-PEAKMJD)/(1+z)
+GENRANGE_REDSHIFT:   0.5  0.5
+GENSIGMA_REDSHIFT:   0.0
+DNDZ:                POWERLAW  2.6E-5  2.2      # rate model required even for fixed z
+GENPEAK_SALT2x1:     0.0
+GENSIGMA_SALT2x1:    0.0  0.0
+GENRANGE_SALT2x1:    0.0  0.0
+GENPEAK_SALT2c:      0.0
+GENSIGMA_SALT2c:     0.0  0.0
+GENRANGE_SALT2c:     0.0  0.0
+# alpha/beta must be defined (standardization); values irrelevant — brightness cancels
+GENPEAK_SALT2ALPHA:  0.14
+GENSIGMA_SALT2ALPHA: 0.0  0.0
+GENRANGE_SALT2ALPHA: 0.14  0.14
+GENPEAK_SALT2BETA:   3.1
+GENSIGMA_SALT2BETA:  0.0  0.0
+GENRANGE_SALT2BETA:  3.1  3.1
+
+# ---- deterministic SED: no intrinsic scatter, no dust (step 6) ----
+GENMAG_SMEAR:            0.0
+GENMAG_SMEAR_MODELNAME:  NONE
+OPT_MWEBV:               0      # MWEBV=0 also set per-LIBID in the SIMLIB; SALT has no host AV
+
+# ---- output: FITS (HEAD has SIM_SALT2x1/c, PEAKMJD; PHOT has SIM_MAGOBS) ----
+FORMAT_MASK:   2

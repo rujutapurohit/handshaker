@@ -120,10 +120,15 @@ def load_modelspec(root_path, tree="MODELSPEC", band_map=None):
         # SNANA writes -9 / -999 as "not set"; a real SCA is >= 1.
         sca_raw = int(ev[sca_f][i]) if sca_f else None
         sca = sca_raw if (sca_raw is not None and sca_raw >= 1) else None
+        # SNANA's own synthetic model mag in this band (MAG_MODEL_<band_raw>),
+        # for the clumsy-SNANA synphot cross-check.
+        mm = f"MAG_MODEL_{band_raw}" if band_raw else None
+        mag_model = float(ev[mm][i]) if (mm and mm in fields) else np.nan
         rows.append({
             "cid": cid, "band": band, "band_raw": band_raw, "sca": sca,
             "mjd": mjd,
             "trest": float(ev[trest_f][i]) if trest_f else None,
+            "mag_model": mag_model,
             "nlam": len(wave),
         })
         seds.append(FixedSED(wave, flux, name=f"{cid}_{mjd}"))
@@ -162,6 +167,34 @@ def attach_columns(spec_df, table, columns, cid_cols=("cid", "CID"),
     n_missing = out[list(colmap.values())[0]].isna().sum() if colmap else 0
     if n_missing:
         log.warning("attach_columns: %d/%d rows had no match in the table", n_missing, len(out))
+    return out
+
+
+def synphot_vs_snana(spec, filters, use_shifted=False, grid=None):
+    """Cross-check handshaker's synphot against SNANA's ``MAG_MODEL`` (clumsy-SNANA).
+
+    For each MODELSPEC spectrum, compute handshaker's synthetic magnitude of the
+    model SED through the nominal (or per-SCA ``use_shifted``) filter, and compare
+    to SNANA's ``mag_model``. Returns ``spec`` with ``hs_mag``, a per-band
+    zeropoint ``zp`` (the median SNANA-minus-handshaker offset), and the residual
+    ``dmag = mag_model - hs_mag - zp``. If handshaker's synphot matches SNANA's,
+    ``dmag`` scatters at the mmag level (the only real difference being the ZP).
+    """
+    from .grid import DEFAULT_GRID
+    from .synphot import synmag_on_grid
+    grid = grid or DEFAULT_GRID
+    out = spec.copy()
+    hs = []
+    for r in out.itertuples():
+        bp = filters.shifted(r.band, r.sca) if (use_shifted and r.sca) else filters.nominal(r.band)
+        hs.append(synmag_on_grid(grid, grid.regrid(r.sed.wave, r.sed.flux), bp.regrid(grid)))
+    out["hs_mag"] = hs
+    out["zp"] = np.nan
+    out["dmag"] = np.nan
+    for band, g in out.groupby("band"):
+        off = (g["mag_model"] - g["hs_mag"]).median()
+        out.loc[g.index, "zp"] = off
+        out.loc[g.index, "dmag"] = g["mag_model"] - g["hs_mag"] - off
     return out
 
 

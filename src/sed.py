@@ -78,6 +78,50 @@ def synthetic_sed(temperature_k=9000.0, wave=None, name="synthetic"):
     return FixedSED(wave, _planck(wave, temperature_k), name=name)
 
 
+def kgiant_sed(path=None, temperature_k=4500.0, name="kgiant"):
+    """The K-giant calibration-star SED, as a :class:`FixedSED`.
+
+    Everything in handshaker's magcor is taken relative to this star:
+    ``magcor = [m_inst - m_ref]_SN - [m_inst - m_ref]_Kgiant`` (so magcor == 0 for
+    the K giant itself). Pass ``path`` to a two-column (wavelength[A], flux) K-giant
+    spectrum for the real SED; with no path it falls back to a blackbody at
+    ``temperature_k`` (a rough placeholder -- real K giants have molecular bands,
+    so supply a proper spectrum for science).
+    """
+    if path:
+        wave, flux = _load_two_column_sed(path)
+        return FixedSED(wave, flux, name=name)
+    wave = np.arange(3000.0, 25000.0, 10.0)
+    return FixedSED(wave, _planck(wave, temperature_k), name=name + "_bb")
+
+
+def _load_two_column_sed(path):
+    """Load (wavelength [A], flux) from a text SED, skipping non-numeric header lines.
+
+    Handles both 2-column (wave flux) and SNANA 3-column (phase wave flux) files;
+    for the latter it takes the phase nearest 0 (a static star has one phase).
+    """
+    rows = []
+    with open(path) as f:
+        for line in f:
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            try:
+                rows.append([float(p) for p in parts])
+            except ValueError:
+                continue
+    if not rows:
+        raise ValueError(f"no numeric SED data found in {path}")
+    ncol = min(len(r) for r in rows)
+    arr = np.array([r[:ncol] for r in rows])
+    if ncol >= 3:                       # SNANA phase wave flux
+        phase = arr[:, 0]
+        keep = phase == phase[np.argmin(np.abs(phase))]
+        return arr[keep, 1], arr[keep, 2]
+    return arr[:, 0], arr[:, 1]
+
+
 def default_salt3_model_dir():
     """``$SNDATA_ROOT/models/SALT3/SALT3.P22-NIR``"""
     root = os.environ.get("SNDATA_ROOT")

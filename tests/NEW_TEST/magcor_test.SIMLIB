@@ -1,0 +1,40 @@
+DOCUMENTATION:
+  PURPOSE:  handshaker <-> SNANA magcor cross-check
+  INTENT:   One LIBID, exactly one observation per band, at a single MJD.
+            The SAME simlib feeds two sims that differ ONLY in the kcor:
+              (A) reference (nominal filters)  + K-star mag system
+              (B) ice filters                  + K-star mag system
+            magcor(band) = mag_A(band) - mag_B(band)  [from SIM_FLUXCAL]
+  NOTES:
+    - Noiseless truth (SIM_FLUXCAL) is used, so ZPT/SKY/PSF values are
+      placeholders; they must only be IDENTICAL between the two runs.
+    - MWEBV = 0 and no dust model (set in the sim-input, step 6).
+    - Trest per obs is controlled in the sim-input via PEAKMJD (step 5):
+          Trest = (MJD_obs - PEAKMJD) / (1 + z)
+      With MJD_obs = 61010 below, PEAKMJD = 61000 and z gives Trest.
+      e.g. PEAKMJD 61010 -> Trest 0 (peak);  61000, z=0 -> Trest +10 d.
+DOCUMENTATION_END:
+
+SURVEY:   ROMAN
+FILTERS:  RZYJHFK
+TELESCOPE: ROMAN
+PIXSIZE:  0.11
+
+BEGIN LIBGEN
+
+# ------------------------------------------------------------------
+LIBID: 1
+RA: 9.0  DECL: -44.0  NOBS: 7  MWEBV: 0.000  PIXSIZE: 0.11
+FIELD: TEST
+#                                                  PSF1 PSF2 P2/1
+#     MJD      IDEXPT FLT GAIN RDNOISE SKYSIG     (pix)(pix)(ratio)  ZPTAVG ZPTERR  MAG
+S:  61010.000    1    R   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+S:  61010.000    2    Z   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+S:  61010.000    3    Y   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+S:  61010.000    4    J   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+S:  61010.000    5    H   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+S:  61010.000    6    F   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+S:  61010.000    7    K   1.0   5.0     10.0       1.50 0.00 0.00    32.00  0.005  -99.0
+END_LIBID: 1
+
+END_OF_SIMLIB:

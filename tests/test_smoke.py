@@ -128,6 +128,19 @@ def test_magcor_table_over_fake_modelspec():
     assert {"magcor_shift", "magcor_ice", "magcor_total", "wavecor"} <= set(tbl.columns)
 
 
+def test_magcor_zero_for_calibration_star():
+    # magcor = [SN inst-ref] - [Kgiant inst-ref]; with SN == the Kgiant it must be 0.
+    from handshaker import kgiant_sed
+    filters = get_filter("synthetic", shift_per_sca=6.0)
+    ice = get_ice_model("released")
+    star = kgiant_sed(temperature_k=4500.0)
+    # the source IS the calibration star (same SED, same z=0 frame) -> magcor == 0
+    r = compute_magcor(_obs(band="J129", sca=10, ice_thickness_nm=150.0, z=0.0),
+                       star, filters, ice, calib_star=star, reference_sca=2)
+    assert abs(r["magcor_total"]) < 1e-9
+    assert abs(r["magcor_ice"]) < 1e-9 and abs(r["magcor_shift"]) < 1e-9
+
+
 def test_validation_harness_closed_loop():
     # Fabricate a "perfect" sim: pert flux = ref flux * 10**(-0.4*predicted magcor).
     # The empirical magcor must then equal the prediction -> residual 0, slope 1, corr 1.

@@ -13,9 +13,9 @@ from .observation import Observation
 from .grid import WaveGrid, DEFAULT_GRID
 from .filters import get_filter, Transmission, TransmissionKind, compose
 from .ice import get_ice_model, ReleasedIceModel, PolyfitIceModel, NoIceModel
-from .sed import synthetic_sed, SALT3SEDModel, FixedSED
+from .sed import synthetic_sed, kgiant_sed, SALT3SEDModel, FixedSED
 from .magcor import compute_magcor, bandpasses_on_grid, wavecor_table, EFFECTS
-from .modelspec import load_modelspec, magcor_table, attach_columns, mjd_ice_thickness
+from .modelspec import load_modelspec, magcor_table, attach_columns, mjd_ice_thickness, synphot_vs_snana
 from .io import load_lcplot, load_fitres, write_snana_filters
 from .validate import empirical_magcor, compare_to_empirical
 from .pipeline import run, run_config
@@ -34,6 +34,7 @@ __all__ = [
     "PolyfitIceModel",
     "NoIceModel",
     "synthetic_sed",
+    "kgiant_sed",
     "SALT3SEDModel",
     "FixedSED",
     "compute_magcor",
@@ -43,6 +44,7 @@ __all__ = [
     "magcor_table",
     "attach_columns",
     "mjd_ice_thickness",
+    "synphot_vs_snana",
     "load_lcplot",
     "load_fitres",
     "write_snana_filters",
