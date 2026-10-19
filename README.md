@@ -62,27 +62,16 @@ tests/test_smoke.py  no-data regression tests
 
 ## Running on Midway (real data)
 
-`configs/roman_salt3.yaml` is the production config; edit its paths for your run.
-It needs `$SNDATA_ROOT` set (with `models/SALT3/SALT3.P22-NIR`) and the
-`ROMAN_FILTERS` directory laid out as `ROMAN_<band>/ROMAN_<band>[_shifted_<sca>].dat`.
+handshaker conda env set up if you want to use it. 
 
 ```bash
-# on Midway, in your env: 
+# on Midway, in your env:
+conda activate handshaker 
 cd handshaker
 pip install -e .
 export SNDATA_ROOT=/project2/rkessler/PRODUCTS/SNDATA_ROOT   # if not already set
-handshaker configs/roman_salt3.yaml -v
+handshaker configs/example.yaml -v
 ```
-
-## Status
-
-Runs end-to-end today: both modes, synthetic + SALT3 SEDs, synthetic +
-ROMAN_FILTERS + kcor filter sources, released ice model, config reproducibility.
-
-Still stubbed / TODO: the SOC filter format, the focal-plane `(RA,DEC)->SCA`
-projection (so `fpa` only trusts the supplied SCA), the ice deposition mosaic
-`.npz` wiring, and the polyfit *magnitude-level* validation
-(`mag_err = mag_poly − mag_true`) called out in the spec.
 
 - Need to find better ways to write modelspec.root files (alternative to root)
 - Better logging and debugging utils
